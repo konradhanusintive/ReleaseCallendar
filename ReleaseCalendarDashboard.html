@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Calendar - Dashboard</title>
+    
+    <!-- Tailwind CSS do szybkiego stylowania -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FullCalendar JS do widoku kalendarza -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    
+    <!-- FontAwesome dla ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Drobne poprawki dla FullCalendar, aby lepiej wyglądał z Tailwindem */
+        .fc-theme-standard .fc-scrollgrid { border-color: #e2e8f0; }
+        .fc-theme-standard th { border-color: #e2e8f0; background-color: #f8fafc; padding: 8px 0; font-weight: 600; color: #475569; }
+        .fc-theme-standard td { border-color: #e2e8f0; }
+        .fc-event { cursor: pointer; border-radius: 4px; padding: 2px 4px; font-size: 0.75rem; border: none; }
+        .fc .fc-toolbar-title { font-size: 1.25rem; font-weight: 600; color: #1e293b; }
+        .fc .fc-button-primary { background-color: #3b82f6; border-color: #3b82f6; }
+        .fc .fc-button-primary:hover { background-color: #2563eb; border-color: #2563eb; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full shadow-xl z-20 transition-all duration-300">
+        <div class="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800">
+            <i class="fa-solid fa-calendar-check text-blue-500 text-xl mr-3"></i>
+            <span class="text-white font-bold text-lg tracking-wide">ReleaseCal</span>
+        </div>
+        
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-line w-6"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <i class="fa-solid fa-code-branch w-6"></i> Wydania (Releases)
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <i class="fa-solid fa-rocket w-6"></i> Rollouty
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <i class="fa-solid fa-umbrella-beach w-6"></i> Urlopy
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <i class="fa-solid fa-users w-6"></i> Zespół
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-3 mb-4 px-2">
+                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                    MK
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm text-white font-medium">Michał Kowalski</span>
+                    <span class="text-xs text-slate-500">Release Manager</span>
+                </div>
+            </div>
+            <button class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-red-500 hover:text-white rounded-lg transition-colors text-sm">
+                <i class="fa-solid fa-sign-out-alt"></i> Wyloguj
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Top Header -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm z-10">
+            <h1 class="text-xl font-semibold text-slate-800">Dashboard</h1>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Nowe Wydanie
+            </button>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                
+                <!-- Calendar Section (zajmuje 2 kolumny na dużych ekranach) -->
+                <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar text-blue-500"></i> Harmonogram
+                    </h2>
+                    <div id="calendar" class="min-h-[500px]"></div>
+                </div>
+
+                <!-- Right Sidebar (Aktywne Wydania i Rollouty) -->
+                <div class="space-y-8">
+                    
+                    <!-- Aktywne Wydania -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-orange-500"></i> Nadchodzące wydania
+                        </h2>
+                        <div id="releases-container" class="space-y-4">
+                            <!-- Tutaj JS wstrzyknie zmockowane wydania -->
+                        </div>
+                    </div>
+
+                    <!-- Status Rolloutu -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-purple-500"></i> Aktywne Rollouty
+                        </h2>
+                        <div id="rollouts-container" class="space-y-6">
+                            <!-- Tutaj JS wstrzyknie dane rolloutu -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ==========================================
+        // MOCKOWANE DANE (Symulacja odpowiedzi z API)
+        // ==========================================
+        
+        // Funkcja pomocnicza do generowania dat względem dzisiaj
+        const today = new Date();
+        const formatDate = (daysOffset) => {
+            const d = new Date(today);
+            d.setDate(d.getDate() + daysOffset);
+            return d.toISOString().split('T')[0];
+        };
+
+        const apiMocks = {
+            releases: [
+                { id: 1, version: "v2.4.0", status: "In Progress", targetDate: formatDate(14), engineer: "Michał K.", phase: "Sanity Tests" },
+                { id: 2, version: "v2.5.0", status: "Draft", targetDate: formatDate(35), engineer: "Anna N.", phase: "Development" },
+                { id: 3, version: "v2.3.5", status: "Released", targetDate: formatDate(-5), engineer: "Tomasz W.", phase: "Done" }
+            ],
+            rollouts: [
+                { releaseId: 3, version: "v2.3.5", percentage: 50, status: "Active", lastUpdated: "2 godziny temu" }
+            ],
+            absences: [
+                { user: "Anna N.", type: "Urlop", start: formatDate(2), end: formatDate(5) },
+                { user: "Piotr Z.", type: "L4", start: formatDate(-1), end: formatDate(2) }
+            ],
+            // Fazy dla widoku kalendarza (np. dla v2.4.0)
+            phases: [
+                { title: 'v2.4.0 - Feature Freeze', start: formatDate(0), end: formatDate(2), color: '#f59e0b' }, // Amber
+                { title: 'v2.4.0 - Sanity Tests', start: formatDate(3), end: formatDate(7), color: '#3b82f6' }, // Blue
+                { title: 'v2.4.0 - CAB Meeting', start: formatDate(10), color: '#8b5cf6' }, // Purple
+                { title: 'v2.4.0 - RELEASE', start: formatDate(14), color: '#10b981' } // Green
+            ]
+        };
+
+        // ==========================================
+        // LOGIKA APLIKACJI (Renderowanie UI)
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // 1. Inicjalizacja Kalendarza
+            initCalendar();
+            
+            // 2. Renderowanie wydań
+            renderReleases();
+            
+            // 3. Renderowanie rolloutów
+            renderRollouts();
+        });
+
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            
+            // Przygotowanie eventów do kalendarza z mocków
+            let calendarEvents = [];
+            
+            // Dodajemy fazy wydań
+            apiMocks.phases.forEach(phase => {
+                calendarEvents.push({
+                    title: phase.title,
+                    start: phase.start,
+                    end: phase.end,
+                    backgroundColor: phase.color
+                });
+            });
+
+            // Dodajemy urlopy jako wydarzenia całodniowe w tle
+            apiMocks.absences.forEach(absence => {
+                calendarEvents.push({
+                    title: `Urlop: ${absence.user}`,
+                    start: absence.start,
+                    end: absence.end,
+                    backgroundColor: '#ef4444', // Red
+                    display: 'background'
+                });
+            });
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                locale: 'pl',
+                firstDay: 1,
+                events: calendarEvents,
+                height: 600
+            });
+            calendar.render();
+        }
+
+        function renderReleases() {
+            const container = document.getElementById('releases-container');
+            const activeReleases = apiMocks.releases.filter(r => r.status !== 'Released');
+            
+            let html = '';
+            activeReleases.forEach(release => {
+                const statusColor = release.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700';
+                
+                html += `
+                    <div class="p-4 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors cursor-pointer group">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">${release.version}</h3>
+                            <span class="text-xs px-2 py-1 rounded-full font-medium ${statusColor}">${release.status}</span>
+                        </div>
+                        <div class="text-sm text-slate-600 mb-2">
+                            <i class="fa-solid fa-bullseye text-slate-400 w-4"></i> Cel: <span class="font-medium text-slate-800">${release.targetDate}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+                            <span><i class="fa-solid fa-user text-slate-400"></i> ${release.engineer}</span>
+                            <span class="bg-slate-100 px-2 py-1 rounded text-slate-600"><i class="fa-solid fa-tasks"></i> ${release.phase}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderRollouts() {
+            const container = document.getElementById('rollouts-container');
+            
+            let html = '';
+            apiMocks.rollouts.forEach(rollout => {
+                html += `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <h3 class="font-bold text-slate-800">${rollout.version}</h3>
+                                <p class="text-xs text-slate-500">Aktualizacja: ${rollout.lastUpdated}</p>
+                            </div>
+                            <span class="text-lg font-bold text-blue-600">${rollout.percentage}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-1000" style="width: ${rollout.percentage}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-400 mt-1">
+                            <span>1%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                        <div class="mt-4 pt-2 flex gap-2">
+                            <button class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded text-sm font-medium transition-colors">
+                                <i class="fa-solid fa-pause"></i> Halt
+                            </button>
+                            <button class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 rounded text-sm font-medium transition-colors">
+                                <i class="fa-solid fa-forward"></i> Next Step
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
